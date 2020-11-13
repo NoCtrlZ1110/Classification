@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -16,6 +16,7 @@
 import util
 PRINT = True
 
+
 class MiraClassifier:
     """
     Mira classifier.
@@ -23,7 +24,8 @@ class MiraClassifier:
     Note that the variable 'datum' in this code refers to a counter of features
     (not to a raw samples.Datum).
     """
-    def __init__( self, legalLabels, max_iterations):
+
+    def __init__(self, legalLabels, max_iterations):
         self.legalLabels = legalLabels
         self.type = "mira"
         self.automaticTuning = False
@@ -36,12 +38,14 @@ class MiraClassifier:
         "Resets the weights of each label to zero vectors"
         self.weights = {}
         for label in self.legalLabels:
-            self.weights[label] = util.Counter() # this is the data-structure you should use
+            # this is the data-structure you should use
+            self.weights[label] = util.Counter()
 
     def train(self, trainingData, trainingLabels, validationData, validationLabels):
         "Outside shell to call your method. Do not modify this method."
 
-        self.features = trainingData[0].keys() # this could be useful for your code later...
+        # this could be useful for your code later...
+        self.features = trainingData[0].keys()
 
         if (self.automaticTuning):
             Cgrid = [0.002, 0.004, 0.008]
@@ -61,9 +65,65 @@ class MiraClassifier:
         representing a vector of values.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        Cweights = {}
+        Cscores = {}
 
-    def classify(self, data ):
+        # tinh gia tri cua tau
+        def calcTau(cee, wya, wy, f):
+            return min(cee, (((wya - wy) * f + 1.0) / (2 * (f * f))))
+
+        for c in Cgrid:
+            # trong so
+            Cweights[c] = self.weights.copy()
+            # bien dem
+            Cscores[c] = 0
+
+            # duyet mang
+            for i in range(self.max_iterations):
+
+                for j in range(len(trainingData)):
+                    results = util.Counter()
+
+                    for l in self.legalLabels:
+                        results[l] = (trainingData[j] * Cweights[c][l], l)
+
+                    est = results.argMax()  # xac dinh lable giong nhat voi training data
+
+                    # Neu doan sai thi dieu chinh lai trong so
+                    if(trainingLabels[j] != est):
+                        tau = calcTau(
+                            c, Cweights[c][est], Cweights[c][trainingLabels[j]], trainingData[j])
+
+                        temp = trainingData[j]
+                        for t in temp:
+                            temp[t] *= tau
+
+                        # dieu chinh trong so
+                        Cweights[c][trainingLabels[j]
+                                    ] = Cweights[c][trainingLabels[j]] + temp
+                        Cweights[c][est] = Cweights[c][est] - temp
+
+        # kiem tra tung c
+        for c in Cgrid:
+            self.weights = Cweights[c].copy()
+            valResults = self.classify(validationData)
+            for i in range(len(validationData)):
+                if(valResults[i] == validationLabels[i]):
+                    Cscores[c] += 1
+
+        # xac dinh gia tri c tot nhat
+        bestScore = 0
+        bestC = Cgrid[0]
+        for c in Cgrid:
+            print Cscores[c]
+            if(Cscores[c] > bestScore):
+                bestScore = Cscores[c]
+                bestC = c
+
+        # dua vao c tot nhat de xac dinh trong so
+        self.weights = Cweights[bestC].copy()
+
+    def classify(self, data):
         """
         Classifies each datum as the label that most closely matches the prototype vector
         for that label.  See the project description for details.
@@ -77,5 +137,3 @@ class MiraClassifier:
                 vectors[l] = self.weights[l] * datum
             guesses.append(vectors.argMax())
         return guesses
-
-
