@@ -58,12 +58,15 @@ class PerceptronClassifier:
             print "Starting iteration ", iteration, "..."
             for i in range(len(trainingData)):
                 label_max = []
+                # xac dinh score cua tung label
                 for j in self.legalLabels:
                     import util
                     label_max.append(self.weights[j]*trainingData[i])
-
+                # lay ra label tot nhat
                 label_final = max(label_max)
                 indexvalue = label_max.index(label_final)
+
+                # neu du doan sai thi dieu chinh lai trong so
 
                 if(label_final != trainingLabels[i]):
 

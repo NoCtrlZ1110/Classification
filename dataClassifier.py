@@ -73,7 +73,7 @@ def enhancedFeatureExtractorDigit(datum):
     You should return a util.Counter() of features
     for this datum (datum is of type samples.Datum).
 
-    ## DESCRIBE YOUR ENHANCED FEATURES HERE...
+    # DESCRIBE YOUR ENHANCED FEATURES HERE...
 
     ##
     """
@@ -217,7 +217,45 @@ def enhancedPacmanFeatures(state, action):
     """
     features = util.Counter()
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    features["willDieNextTurn"] = 0
+    features["nearestGhost"] = 50
+    features["nearestFood"] = 50
+    features["score"] = 0
+    features["scaredtimers"] = 0
+
+    def manhattanDistance(xy1, xy2):
+        return abs(xy1[0] - xy2[0]) + abs(xy1[1] - xy2[1])
+
+    suc = state.generateSuccessor(0, action)
+    nextMan = suc.getPacmanPosition()  # lay vi tri moi cua Pacman
+
+    features["score"] = suc.getScore()
+
+    for p in suc.getGhostPositions():
+        # kiem tra xem turn sau pacman co die khong
+        if(p == nextMan):
+            features["willDieNextTurn"] = 100
+
+        #  tim khoang cach manhattan tu pacman toi ma gan nhat
+        gdist = manhattanDistance(nextMan, p)
+        if(gdist < features["nearestGhost"]):
+            features["nearestGhost"] = gdist
+
+    # tra ve thoi gian ma bi "scared"
+    for g in suc.getGhostStates():
+        features["scaredtimers"] += g.scaredTimer
+
+    # lay thong tin thuc an
+    sucFoodGrid = suc.getFood()
+
+    # tim thuc an gan nhat
+    rlist = sucFoodGrid.asList()
+    for r in rlist:
+        if(sucFoodGrid[r[0]][r[1]]):
+            mand = manhattanDistance(nextMan, r)
+            if(mand < features["nearestFood"]):
+                features["nearestFood"] = mand
+
     return features
 
 
@@ -243,15 +281,15 @@ def analysis(classifier, guesses, testLabels, testData, rawTestData, printImage)
     This function is called after learning.
     Include any code that you want here to help you analyze your results.
 
-    Use the printImage(<list of pixels>) function to visualize features.
+    Use the printImage( < list of pixels > ) function to visualize features.
 
     An example of use has been given to you.
 
     - classifier is the trained classifier
     - guesses is the list of labels predicted by your classifier on the test set
     - testLabels is the list of true labels
-    - testData is the list of training datapoints (as util.Counter of features)
-    - rawTestData is the list of training datapoints (as samples.Datum)
+    - testData is the list of training datapoints(as util.Counter of features)
+    - rawTestData is the list of training datapoints(as samples.Datum)
     - printImage is a method to visualize the features
     (see its use in the odds ratio part in runClassifier method)
 
@@ -290,7 +328,7 @@ class ImagePrinter:
         to the analysis function you write.
 
         Pixels should take the form
-        [(2,2), (2, 3), ...]
+        [(2, 2), (2, 3), ...]
         where each tuple represents a pixel.
         """
         image = samples.Datum(None, self.width, self.height)
