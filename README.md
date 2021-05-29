@@ -1,4 +1,4 @@
-# <b>Nguyễn Văn Huy - 18020651</b>
+
 ```Giải thích các câu hỏi được comment ở code```
 
 ## Question 1 - Perceptron
